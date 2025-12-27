@@ -10,5 +10,5 @@ A minimalistic implementation of Retrieval-Augmented Generation (RAG) using Lang
 3. Set up your environment variables in a `.env` file (refer to `.env.example` for guidance).
 4. Run the main application:
    ```bash
-   python main.py
+   uvicorn main:app --reload --host 0.0.0.0 --port 5000
    ```
