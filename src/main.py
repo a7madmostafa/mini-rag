@@ -1,9 +1,22 @@
 from fastapi import FastAPI
-from dotenv import load_dotenv
-load_dotenv(".env")
-from routes.base import base_router
-from routes.data import data_router
+from routes import base, data
+from pymongo import AsyncMongoClient
+from helpers.config import get_settings
+from contextlib import asynccontextmanager
 
-app = FastAPI()
-app.include_router(base_router)
-app.include_router(data_router)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    settings = get_settings()
+
+    app.mongo_conn = AsyncMongoClient(settings.MONGODB_URL)
+    app.db_client  = app.mongo_conn[settings.MONGODB_DATABASE]
+
+    yield  # 👈 app is running
+
+    app.mongo_conn.close()  # graceful shutdown
+
+app = FastAPI(lifespan=lifespan)
+
+
+app.include_router(base.base_router)
+app.include_router(data.data_router)
