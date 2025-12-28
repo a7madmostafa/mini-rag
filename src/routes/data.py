@@ -1,8 +1,9 @@
 from fastapi import FastAPI, APIRouter, Depends, UploadFile, status
 from fastapi.responses import JSONResponse
 from helpers.config import get_settings, Settings
-from controllers import DataController, ProjectController
+from controllers import DataController, ProjectController, ProcessController
 from models import ResponseStatus
+from .schemes.data import ProcessRequest
 import logging
 import aiofiles
 
@@ -41,8 +42,8 @@ async def upload_data(file: UploadFile, project_id: str,
     except Exception as e:
         logger.error(f"Error uploading file {file.filename}: {str(e)}")
         return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"message": ResponseStatus.FILE_UPLOAD_FAILED.value}
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": ResponseStatus.FILE_UPLOAD_FAILURE.value}
         )
 
     
@@ -51,3 +52,29 @@ async def upload_data(file: UploadFile, project_id: str,
         content={"message": message,
                  "file_id": file_id}
     )
+
+
+@data_router.post("/process/{project_id}")
+async def process_data(project_id: str, request: ProcessRequest):
+    
+    file_id = request.file_id
+    chunk_size = request.chunk_size
+    overlap = request.overlap
+    # do_reset = request.do_reset
+
+    process_controller = ProcessController(project_id=project_id)
+    chunks = process_controller.process_file_content(
+        file_id=file_id, 
+        chunk_size=chunk_size, 
+        overlap=overlap
+    )
+
+    if chunks is None or len(chunks) == 0:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": ResponseStatus.PROCESSING_FAILURE.value,
+                     "num_chunks": len(chunks)
+                     }
+        )
+
+    return chunks

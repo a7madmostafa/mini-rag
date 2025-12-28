@@ -6,3 +6,7 @@ class ResponseStatus(str, Enum):
     
     FILE_TYPE_NOT_SUPPORTED = "file_type_not_supported"
     FILE_SIZE_EXCEEDED = "file_size_exceeded"
+
+    PROCESSING_SUCCESS = "processing_success"
+    PROCESSING_FAILURE = "processing_failure"
+    
