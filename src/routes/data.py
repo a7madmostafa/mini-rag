@@ -20,6 +20,7 @@ async def upload_data(file: UploadFile, project_id: str,
     
     data_controller = DataController()
     
+    # Validate uploaded file
     is_valid, message = data_controller.validate_uploaded_file(file = file)
     
     
@@ -29,11 +30,13 @@ async def upload_data(file: UploadFile, project_id: str,
             content={"message": message}
         )
     
+    # Generate a unique filename
     project_path = ProjectController().get_project_path(project_id=project_id)
     file_path, file_id = data_controller.generate_unique_file_name(
         filename=file.filename, 
         project_id=project_id)
     
+    # Save the file asynchronously (chunks)
     try:
         async with aiofiles.open(file_path, 'wb') as out_file:
             while chunk := await file.read(app_settings.FILE_DEFAULT_CHUNK_SIZE_BYTES):  # Read file in chunks

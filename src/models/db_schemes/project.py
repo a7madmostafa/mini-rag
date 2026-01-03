@@ -8,10 +8,10 @@ class ProjectDBScheme(BaseModel):
 
     @field_validator("project_id")
     @classmethod
-    def validate_project_id(cls, v: str) -> str:
-        if not v.isalnum():
+    def validate_project_id(cls, value: str) -> str:
+        if not value.isalnum():
             raise ValueError("project_id must contain only letters and numbers")
-        return v
+        return value
     
     class Config:
         allow_population_by_field_name = True
